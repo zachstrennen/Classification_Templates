@@ -6,7 +6,7 @@ from sklearn.metrics import accuracy_score
 def read_data(path:str) -> pd.DataFrame:
     """
     Read in the dataset from a selected directory.
-    :param path: A string containing the path name.
+    :param path: String containing the path name.
     :return: Dataset pulled from directory path.
     """
     df = pd.read_csv(path)
@@ -35,7 +35,7 @@ def convert_date_to_year(df:pd.DataFrame,column_name:str) -> pd.DataFrame:
 def remove_column(df:pd.DataFrame,column:str) -> (pd.DataFrame,pd.DataFrame,pd.DataFrame,pd.DataFrame):
     """
     Remove an unwanted column from a dataframe.
-    :param path: Dataframe, string of  column name to be removed
+    :param path: Dataframe and the string of the column name to be removed.
     :return: Dataframe with the column removed.
     """
     df = df.drop(column, axis=1)
