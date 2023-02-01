@@ -6,48 +6,36 @@ from sklearn.metrics import accuracy_score
 def read_data(path:str) -> pd.DataFrame:
     """
     Read in the dataset from a selected directory.
+    Adjust dataframe to specific format.
     :param path: String containing the path name.
-    :return: Dataset pulled from directory path.
+    :return: Adjusted dataset pulled from directory path.
     """
+
+
     df = pd.read_csv(path)
-    return df
 
-def convert_to_float(df:pd.DataFrame,column_name:str) -> pd.DataFrame:
-    """
-    Convert the numbers from string data types to float data types.
-    :param path: Dataframe and the string name of the column that will be converted.
-    :return: Dataframe with the updated column.
-    """
-    df[column_name] = df[column_name].replace(',','',regex=True)
-    df[column_name] = df[column_name].astype(float)
-    return df
+    # Convert column to float
+    df["Amount Stolen"] = df["Amount Stolen"].replace(',', '', regex=True)
+    df["Amount Stolen"] = df["Amount Stolen"].astype(float)
 
-def convert_date_to_year(df:pd.DataFrame,column_name:str) -> pd.DataFrame:
-    """
-    Convert the dates from string data types to int years.
-    :param path: A dataframe and the string name of the column that will be converted
-    :return: Dataframe with the updated column.
-    """
-    df[column_name] = pd.to_datetime(df[column_name], format='%b, %Y')
-    df[column_name] = pd.DatetimeIndex(df['Date']).year
-    return df
+    # Convert string to date data type
+    df['Date'] = pd.to_datetime(df['Date'], format='%b, %Y')
 
-def remove_column(df:pd.DataFrame,column:str) -> (pd.DataFrame,pd.DataFrame,pd.DataFrame,pd.DataFrame):
-    """
-    Remove an unwanted column from a dataframe.
-    :param path: Dataframe and the string of the column name to be removed.
-    :return: Dataframe with the column removed.
-    """
-    df = df.drop(column, axis=1)
-    return df
+    # Only use years as a predictor (in terms of date)
+    df['Date'] = pd.DatetimeIndex(df['Date']).year
 
-def shuffle_data(df:pd.DataFrame) -> pd.DataFrame:
-    """
-    Randomly shuffle the rows of a dataframe.
-    :param path: A dataframe and to be shuffled.
-    :return: Shuffled dataframe.
-    """
+    # Randomly shuffle the rows (for data splitting purposes)
     df = df.sample(frac=1)
+
+    # Company name will have no effect on prediction
+    df = df.drop("Company Name", axis=1)
+
+    # Split categories into binary data (one hot encoding)
+    df = pd.get_dummies(df)
+
+    #Drop non-determinant feature
+    df = df.drop("Rug Pull vs Scam_Scam", axis=1)
+
     return df
 
 def split_data(df:pd.DataFrame,ratio:float,target:str) -> (pd.DataFrame,pd.DataFrame,pd.DataFrame,pd.DataFrame):
@@ -63,7 +51,7 @@ def split_data(df:pd.DataFrame,ratio:float,target:str) -> (pd.DataFrame,pd.DataF
     train_X,test_X, train_y,test_y = train_test_split(X,y,test_size=ratio)
     return train_X,test_X, train_y,test_y
 
-def build_model(train_X:pd.DataFrame,train_y:pd.DataFrame,test_X:pd.DataFrame,test_y:pd.DataFrame):
+def train_data(train_X:pd.DataFrame,train_y:pd.DataFrame,test_X:pd.DataFrame,test_y:pd.DataFrame):
     """
     Build the model using XGBoost.
     Print out the accuracy of the model.
@@ -84,24 +72,14 @@ if __name__ == '__main__':
 
     # Read in data
     df = read_data("/Users/zachstrennen/Downloads/NFT Rug Pulls.csv")
-    df = convert_to_float(df, "Amount Stolen")
-
-    # Only use years as a predictor (in terms of date)
-    df = convert_date_to_year(df, "Date")
-
-    # Randomly shuffle the rows (for data splitting purposes)
-    df = shuffle_data(df)
-
-    # Company name will have no effect on prediction
-    df = remove_column(df,"Company Name")
-
-    # Split categories into binary data (one hot encoding)
-    df = pd.get_dummies(df)
 
     #Predict if Rug Pull
-    df = remove_column(df, "Rug Pull vs Scam_Scam")
     train_X,test_X, train_y,test_y = split_data(df,0.5,"Rug Pull vs Scam_Rug Pull")
-    model = build_model(train_X,train_y,test_X,test_y)
+    model = train_data(train_X,train_y,test_X,test_y)
+
+
+
+
 
 
 
