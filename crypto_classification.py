@@ -4,7 +4,8 @@ from xgboost import XGBClassifier
 from sklearn.metrics import accuracy_score
 import sklearn.naive_bayes
 
-def read_data(path:str) -> pd.DataFrame:
+
+def read_data(path: str) -> pd.DataFrame:
     """
     Read in the dataset from a selected directory.
     Adjust dataframe to specific format.
@@ -38,7 +39,9 @@ def read_data(path:str) -> pd.DataFrame:
 
     return df
 
-def split_data(df:pd.DataFrame,ratio:float,target:str) -> (pd.DataFrame,pd.DataFrame,pd.DataFrame,pd.DataFrame):
+
+def split_data(df: pd.DataFrame, ratio: float, target: str) ->\
+        (pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame):
     """
     Split a dataframe by target and predictor variables.
     Decide which data will be test data and which data will be training data.
@@ -49,10 +52,11 @@ def split_data(df:pd.DataFrame,ratio:float,target:str) -> (pd.DataFrame,pd.DataF
     """
     X = df[df.columns[~df.columns.isin([target])]]
     y = df[[target]]
-    train_X,test_X, train_y,test_y = train_test_split(X,y,test_size=ratio)
-    return train_X,test_X, train_y,test_y
+    train_X, test_X, train_y, test_y = train_test_split(X, y, test_size=ratio)
+    return train_X, test_X, train_y, test_y
 
-def train_data_XGB(train_X:pd.DataFrame,train_y:pd.DataFrame):
+
+def train_data_XGB(train_X: pd.DataFrame, train_y: pd.DataFrame):
     """
     Build the model using XGBoost.
     Print out the accuracy of the model.
@@ -65,7 +69,8 @@ def train_data_XGB(train_X:pd.DataFrame,train_y:pd.DataFrame):
     model.fit(train_X, train_y)
     return model
 
-def train_data_bayes(train_X:pd.DataFrame,train_y:pd.DataFrame):
+
+def train_data_bayes(train_X: pd.DataFrame, train_y: pd.DataFrame):
     """
     Build the model using Naive Bayes.
     Print out the accuracy of the model.
@@ -75,10 +80,11 @@ def train_data_bayes(train_X:pd.DataFrame,train_y:pd.DataFrame):
     :return: Prediction model.
     """
     model = sklearn.naive_bayes.GaussianNB()
-    model.fit(train_X, train_y.values.ravel(),sample_weight=None)
+    model.fit(train_X, train_y.values.ravel(), sample_weight=None)
     return model
 
-def possess(model,test_X:pd.DataFrame,test_y:pd.DataFrame):
+
+def possess(model, test_X: pd.DataFrame, test_y: pd.DataFrame):
     """
     Take in the fitted model and use test data to output the models accuracy.
     :param model: Already built model.
@@ -87,12 +93,12 @@ def possess(model,test_X:pd.DataFrame,test_y:pd.DataFrame):
     :return:
     """
     y_pred = model.predict(test_X)
-    predictions = [round(value) for value in y_pred]
     # Compare for accuracy
-    accuracy = accuracy_score(test_y, predictions)
+    accuracy = accuracy_score(test_y, y_pred)
     return accuracy
 
-def predict(model, df:pd.DataFrame):
+
+def predict(model, df: pd.DataFrame):
     """
     Take in the model and a dataset of value to use for prediction.
     Use the model on the dataset and return a binary vector of predictions.
@@ -102,37 +108,5 @@ def predict(model, df:pd.DataFrame):
     """
     # Fit the model to the dataset that will be used for prediction
     predictions = model.predict(df)
-    predictions = [round(value) for value in predictions]
     # Return a binary vector of predictions
     return predictions
-
-
-if __name__ == '__main__':
-
-    # Read in data
-    df = read_data("/Users/zachstrennen/Downloads/NFT Rug Pulls.csv")
-
-    # Predict if Rug Pull using two separate models
-    train_X,test_X, train_y,test_y = split_data(df,0.5,"Rug Pull vs Scam_Rug Pull")
-    XGB_model = train_data_XGB(train_X,train_y)
-    bayes_model = train_data_bayes(train_X, train_y)
-
-    # Find the accuracy of both models and print it
-    accuracy = possess(XGB_model,test_X,test_y)
-    print("XGBOOST MODEL")
-    print("Accuracy: %.2f%%" % (accuracy * 100.0))
-    print("")
-    accuracy = possess(bayes_model, test_X, test_y)
-    print("BAYES MODEL")
-    print("Accuracy: %.2f%%" % (accuracy * 100.0))
-
-
-
-
-
-
-
-
-
-
-
